@@ -1,0 +1,2 @@
+import { Pressable,Text,View } from 'react-native';
+export default ({apps,onPress}:{apps:string[];onPress:(a:string)=>void})=><View className='flex-row flex-wrap gap-2'>{apps.map(a=><Pressable key={a} onPress={()=>onPress(a)} className='w-[23%] bg-[#FFFDF8] border border-[#E8DDCC] rounded-xl p-2'><Text numberOfLines={1}>{a}</Text><Text className='text-xs text-[#6E665A]'>Locked</Text></Pressable>)}</View>;

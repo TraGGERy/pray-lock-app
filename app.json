@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "PrayFirst",
+    "slug": "prayfirst",
+    "scheme": "prayfirst",
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}

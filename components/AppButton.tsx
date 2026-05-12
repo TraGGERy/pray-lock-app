@@ -1,0 +1,2 @@
+import { Pressable, Text } from 'react-native';
+export default function AppButton({label,onPress,variant='primary'}:{label:string;onPress:()=>void;variant?:'primary'|'secondary'}){return <Pressable onPress={onPress} className={`py-4 px-5 rounded-2xl ${variant==='primary'?'bg-[#1F4D36]':'bg-transparent border border-[#E8DDCC]'}`}><Text className={`text-center font-semibold ${variant==='primary'?'text-[#FFFDF8]':'text-[#1F4D36]'}`}>{label}</Text></Pressable>}
