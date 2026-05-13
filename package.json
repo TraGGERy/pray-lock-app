@@ -23,7 +23,9 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "expo-notifications": "~0.29.14",
-    "expo-local-authentication": "~15.0.7"
+    "expo-local-authentication": "~15.0.7",
+    "react-native-purchases": "^8.11.1",
+    "react-native-purchases-ui": "^8.11.1"
   },
   "devDependencies": {
     "@types/react": "~19.0.10",
