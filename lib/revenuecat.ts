@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL, CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
+import { captureError, trackEvent } from './monitoring';
 
 export const PRO_ENTITLEMENT = 'prayer lock: put God first Pro';
 
@@ -20,8 +21,9 @@ export async function initializePurchases() {
     Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.VERBOSE : LOG_LEVEL.WARN);
     Purchases.configure({ apiKey: getApiKey() });
     initialized = true;
+    trackEvent('rc_initialized');
   } catch (error) {
-    console.error('RevenueCat init failed', error);
+    captureError(error, { area: 'rc_init' });
     throw error;
   }
 }
@@ -29,18 +31,22 @@ export async function initializePurchases() {
 export async function getOfferings(): Promise<PurchasesOffering | null> {
   await initializePurchases();
   const offerings = await Purchases.getOfferings();
+  trackEvent('rc_offerings_loaded', { hasCurrent: !!offerings.current });
   return offerings.current ?? null;
 }
 
 export async function purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
   await initializePurchases();
   const { customerInfo } = await Purchases.purchasePackage(pkg);
+  trackEvent('rc_purchase_success', { packageId: pkg.identifier });
   return customerInfo;
 }
 
 export async function restorePurchases(): Promise<CustomerInfo> {
   await initializePurchases();
-  return Purchases.restorePurchases();
+  const info = await Purchases.restorePurchases();
+  trackEvent('rc_restore_success');
+  return info;
 }
 
 export async function getCustomerInfo(): Promise<CustomerInfo> {
@@ -55,6 +61,7 @@ export function hasProEntitlement(info: CustomerInfo): boolean {
 export async function presentPaywall(): Promise<boolean> {
   await initializePurchases();
   const result = await RevenueCatUI.presentPaywall();
+  trackEvent('rc_paywall_result', { result });
   return result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED;
 }
 

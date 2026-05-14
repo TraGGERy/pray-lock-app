@@ -15,6 +15,7 @@ import {
 } from '@/lib/revenuecat';
 import { storage } from '@/lib/storage';
 import type { PurchasesOffering } from 'react-native-purchases';
+import { captureError } from '@/lib/monitoring';
 
 export default function PaywallScreen() {
   const [selected, setSelected] = useState<'yearly' | 'monthly' | 'lifetime'>('yearly');
@@ -31,6 +32,7 @@ export default function PaywallScreen() {
           router.back();
         }
       } catch (e) {
+        captureError(e, { area: 'paywall_bootstrap' });
         Alert.alert('Billing setup issue', 'Subscription service is not configured yet.');
       }
     })();
@@ -55,7 +57,8 @@ export default function PaywallScreen() {
         Alert.alert('Success', 'Premium unlocked.');
         router.back();
       }
-    } catch {
+    } catch (e) {
+      captureError(e, { area: 'paywall_buy', selected });
       Alert.alert('Purchase failed', 'Please try again.');
     } finally {
       setLoading(false);
@@ -68,7 +71,8 @@ export default function PaywallScreen() {
       const active = hasProEntitlement(info);
       await storage.set(storage.k.premium, active);
       Alert.alert(active ? 'Restored' : 'No active purchases found');
-    } catch {
+    } catch (e) {
+      captureError(e, { area: 'paywall_restore' });
       Alert.alert('Restore failed');
     }
   };
@@ -77,7 +81,7 @@ export default function PaywallScreen() {
     <ScreenContainer>
       <Pressable onPress={() => router.back()}><Text>Close</Text></Pressable>
       <Text className='text-4xl text-[#123524] font-semibold mt-4'>Unlock Your Prayer Routine</Text>
-      <Text className='text-[#6E665A] my-3'>Choose your plan</Text>
+      <Text className='text-[#6E665A] my-2'>Subscription auto-renews unless cancelled at least 24 hours before period end.</Text>
       <View className='flex-row gap-3'>
         <PricingCard title='Lifetime' price='One-time' selected={selected === 'lifetime'} onPress={() => setSelected('lifetime')} />
         <PricingCard title='Yearly' price='$29.99 / year' badge='Most Popular' selected={selected === 'yearly'} onPress={() => setSelected('yearly')} />
@@ -87,7 +91,10 @@ export default function PaywallScreen() {
       </View>
       <View className='mt-4'><AppButton label={loading ? 'Processing...' : 'Continue'} onPress={buySelected} /></View>
       <Pressable onPress={onRestore}><Text className='text-center mt-3 text-[#6E665A]'>Restore Purchase</Text></Pressable>
-      <Text className='text-center mt-2 text-[#6E665A]'>Terms • Privacy</Text>
+      <View className='flex-row justify-center gap-4 mt-2'>
+        <Pressable onPress={() => router.push('/terms')}><Text className='text-[#6E665A]'>Terms</Text></Pressable>
+        <Pressable onPress={() => router.push('/privacy')}><Text className='text-[#6E665A]'>Privacy</Text></Pressable>
+      </View>
     </ScreenContainer>
   );
 }
